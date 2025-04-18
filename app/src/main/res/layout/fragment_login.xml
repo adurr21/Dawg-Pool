@@ -7,6 +7,15 @@
     android:gravity="center"
     android:background="@android:color/white">
 
+    <TextView
+        android:id="@+id/loginHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
     <EditText
         android:id="@+id/loginEmail"
         android:layout_width="match_parent"
