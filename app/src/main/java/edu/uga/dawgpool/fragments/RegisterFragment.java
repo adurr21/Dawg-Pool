@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,11 @@ public class RegisterFragment extends Fragment {
                 Toast.makeText(getContext(), "Email and password must not be empty.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            // Check Email Format
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(getContext(), "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
@@ -59,12 +65,23 @@ public class RegisterFragment extends Fragment {
                             User newUser = new User(userId, email, 150); // user starts with 150 ride points
                             usersRef.child(userId).setValue(newUser);
 
+                            Toast.makeText(getContext(), "Account created successfully.", Toast.LENGTH_SHORT).show();
+
                             // Navigate to login
                             requireActivity().getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.fragment_container, new LoginFragment())
                                     .commit();
                         } else {
-                            Toast.makeText(getContext(), "Registration failed.", Toast.LENGTH_SHORT).show();
+                            Exception e = task.getException();
+                            Log.e("RegisterFragment", "Registration error", e);
+                            String errorMsg = "Registration failed.";
+                            if (e != null && e.getMessage() != null) {
+                                String msg = e.getMessage();
+                                if (msg.contains("The email address is already in use")) {
+                                    errorMsg = "That email is already registered.";
+                                }
+                            }
+                            Toast.makeText(getContext(), errorMsg, Toast.LENGTH_SHORT).show();
                         }
                     });
         });

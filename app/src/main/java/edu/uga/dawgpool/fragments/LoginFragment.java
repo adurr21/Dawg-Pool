@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 
 import edu.uga.dawgpool.R;
 
@@ -50,7 +52,12 @@ public class LoginFragment extends Fragment {
                                     .replace(R.id.fragment_container, new DashboardFragment())
                                     .commit();
                         } else {
-                            Toast.makeText(getContext(), "Login Failed.", Toast.LENGTH_SHORT).show();
+                            Exception e = task.getException();
+                            if (e instanceof FirebaseAuthInvalidUserException || e instanceof FirebaseAuthInvalidCredentialsException) {
+                                Toast.makeText(getContext(), "Incorrect email or password.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getContext(), "Login failed. Please try again.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
         });
