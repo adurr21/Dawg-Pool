@@ -44,6 +44,11 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "Email and password must not be empty.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            // Check Email Format
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(getContext(), "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
