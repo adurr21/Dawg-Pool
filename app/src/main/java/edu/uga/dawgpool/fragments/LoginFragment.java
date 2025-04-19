@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 
+import edu.uga.dawgpool.MainActivity;
 import edu.uga.dawgpool.R;
 
 public class LoginFragment extends Fragment {
@@ -35,6 +36,10 @@ public class LoginFragment extends Fragment {
         passwordEditText = view.findViewById(R.id.loginPassword);
         loginBtn = view.findViewById(R.id.loginButton);
         goToRegisterBtn = view.findViewById(R.id.goToRegisterButton);
+
+        ((MainActivity) requireActivity()).setToolbarVisibility(true);
+        ((MainActivity) requireActivity()).setShowLogout(false); // hide logout button
+        ((MainActivity) requireActivity()).setToolbarTitle("Login");
 
         loginBtn.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();

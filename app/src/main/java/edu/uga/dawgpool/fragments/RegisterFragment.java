@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import edu.uga.dawgpool.MainActivity;
 import edu.uga.dawgpool.R;
 import edu.uga.dawgpool.models.User;
 
@@ -40,6 +41,10 @@ public class RegisterFragment extends Fragment {
         passwordEditText = view.findViewById(R.id.registerPassword);
         registerBtn = view.findViewById(R.id.registerButton);
         goToLoginBtn = view.findViewById(R.id.goToLoginButton);
+
+        ((MainActivity) requireActivity()).setToolbarVisibility(true);
+        ((MainActivity) requireActivity()).setShowLogout(false); // hide logout button
+        ((MainActivity) requireActivity()).setToolbarTitle("Register");
 
         registerBtn.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();

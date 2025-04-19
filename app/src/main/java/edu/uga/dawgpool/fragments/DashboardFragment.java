@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import edu.uga.dawgpool.MainActivity;
 import edu.uga.dawgpool.R;
 
 
@@ -17,6 +19,9 @@ public class DashboardFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        ((MainActivity) requireActivity()).setToolbarTitle("Dashboard");
+        ((MainActivity) requireActivity()).setShowLogout(true); // logout visible
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_dashboard, container, false);
     }
