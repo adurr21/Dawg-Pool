@@ -2,6 +2,8 @@ package edu.uga.dawgpool.models;
 import com.google.firebase.Timestamp;
 
 public class Ride {
+
+    private String rid;
     public String type; // "offer" or "request"
     public String to; // location
     public String from; // location
@@ -15,8 +17,9 @@ public class Ride {
         // Required for Firebase
     }
 
-    public Ride(String type, String to, String from, Timestamp datetime,
+    public Ride(String rid, String type, String to, String from, Timestamp datetime,
                 String postedBy, String acceptedBy, String status, int points) {
+        this.rid = rid;
         this.type = type;
         this.to = to;
         this.from = from;
