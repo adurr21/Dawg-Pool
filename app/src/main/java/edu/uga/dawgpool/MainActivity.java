@@ -1,6 +1,7 @@
 package edu.uga.dawgpool;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,13 +17,16 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
+import edu.uga.dawgpool.fragments.DashboardFragment;
 import edu.uga.dawgpool.fragments.LoginFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String TAG = "DawgPool";
+    public static final String LOG_TAG = "DawgPool";
     private FirebaseAuth mAuth;
+    private FirebaseUser user;
     private Toolbar toolbar;
     private boolean showLogout = true;
 
@@ -38,17 +42,34 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Log.d(LOG_TAG, "Main Activity onCreate - Current FirebaseUser UID: " + user.getUid());
+            Log.d(LOG_TAG, "Main Activity onCreate - Current FirebaseUser email: " + user.getEmail());
+        } else {
+            Log.d(LOG_TAG, "Main Activity onCreate - Current User was NOT found");
+        }
+
         // set toolbar visible by default
         toolbar = findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
         toolbar.setVisibility(View.VISIBLE);
 
-        // Load Login Fragment by Default
-        if (savedInstanceState == null) {
+
+        if (user != null) {
+            // Load Dashboard Fragment since user is already logged in.
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new LoginFragment())
+                    .replace(R.id.fragment_container, new DashboardFragment())
                     .commit();
+        } else {
+            // Load Login Fragment if a user was not found by FireBase
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new LoginFragment())
+                        .commit();
+            }
         }
+
     }
 
     @Override
