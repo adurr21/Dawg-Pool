@@ -29,6 +29,9 @@ public class DashboardFragment extends Fragment {
         Button viewOffersButton = view.findViewById(R.id.viewOffersBtn);
         Button viewRequestsButton = view.findViewById(R.id.viewRequestsBtn);
 
+        Button createDriveButton = view.findViewById(R.id.createDriveButton);
+        Button createRideButton = view.findViewById(R.id.createRideButton);
+
         viewOffersButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new RideOffersFragment())
@@ -42,6 +45,30 @@ public class DashboardFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
+
+        createDriveButton.setOnClickListener(v -> {
+            Fragment createRideFragment = new CreateRideFragment();
+            Bundle args = new Bundle();
+            createRideFragment.setArguments(args);
+            args.putString("create_status", "driver");
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, createRideFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        createRideButton.setOnClickListener(v -> {
+            Fragment createRideFragment = new CreateRideFragment();
+            Bundle args = new Bundle();
+            createRideFragment.setArguments(args);
+            args.putString("create_status", "rider");
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, createRideFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+
 
         return view;
     }
