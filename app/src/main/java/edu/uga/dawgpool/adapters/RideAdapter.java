@@ -59,6 +59,23 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         String formattedDate = new SimpleDateFormat("EEE, MMM d, h:mm a", Locale.getDefault()).format(date);
         holder.dateText.setText("When: " + formattedDate);
 
+        if (mode.equals("accepted")) {
+            holder.roleText.setVisibility(View.VISIBLE);
+            if (ride.postedBy.equals(currentUser.getUid())) {
+                holder.roleText.setText("Your Role: Driver");
+            } else if (ride.acceptedBy != null && ride.acceptedBy.equals(currentUser.getUid())) {
+                holder.roleText.setText("Your Role: Rider");
+            } else {
+                // should not happen
+                holder.roleText.setText("Your Role: Unknown");
+            }
+            holder.ridePointsText.setVisibility(View.VISIBLE);
+            holder.ridePointsText.setText("Ride Points: " + ride.points);
+        } else {
+            holder.roleText.setVisibility(View.GONE);
+            holder.ridePointsText.setVisibility(View.GONE);
+        }
+
         // Only show edit/delete buttons if user is the one who posted it
         if (ride.postedBy.equals(currentUser.getUid()) && "open".equals(ride.status)) {
             holder.manageMyRideButtons.setVisibility(View.VISIBLE);
@@ -129,7 +146,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
     }
 
     public static class RideViewHolder extends RecyclerView.ViewHolder {
-        TextView fromText, toText, dateText;
+        TextView fromText, toText, dateText, roleText, ridePointsText;
         LinearLayout manageMyRideButtons;
         LinearLayout manageOtherRideButtons;
         Button editButton, deleteButton, acceptButton;
@@ -139,6 +156,8 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             fromText = itemView.findViewById(R.id.fromText);
             toText = itemView.findViewById(R.id.toText);
             dateText = itemView.findViewById(R.id.dateText);
+            roleText = itemView.findViewById(R.id.roleText);
+            ridePointsText = itemView.findViewById(R.id.ridePointsText);
             manageMyRideButtons = itemView.findViewById(R.id.manageMyRideButtons);
             manageOtherRideButtons = itemView.findViewById(R.id.manageOtherRideButtons);
             editButton = itemView.findViewById(R.id.editButton);
