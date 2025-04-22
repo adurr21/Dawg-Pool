@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"/>
 
     <LinearLayout
-        android:id="@+id/manageButtons"
+        android:id="@+id/manageMyRideButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -54,4 +54,21 @@
             android:layout_height="wrap_content"
             android:text="Delete" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/manageOtherRideButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/acceptButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accept"
+            android:layout_marginEnd="8dp" />
+    </LinearLayout>
+
 </LinearLayout>

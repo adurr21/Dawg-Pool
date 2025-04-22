@@ -56,7 +56,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
 
         // Only show edit/delete buttons if user is the one who posted it
         if (ride.postedBy.equals(currentUser.getUid()) && "open".equals(ride.status)) {
-            holder.manageButtons.setVisibility(View.VISIBLE);
+            holder.manageMyRideButtons.setVisibility(View.VISIBLE);
 
             holder.editButton.setOnClickListener(v -> {
                 String mode = ride.type.equals("request") ? "rider" : "driver";
@@ -81,7 +81,22 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
                                 Toast.makeText(v.getContext(), "Failed to delete ride", Toast.LENGTH_SHORT).show());
             });
         } else {
-            holder.manageButtons.setVisibility(View.GONE);
+            holder.manageMyRideButtons.setVisibility(View.GONE);
+            holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
+            holder.acceptButton.setOnClickListener(v -> {
+                FirebaseDatabase.getInstance().getReference("rides")
+                        .child(ride.getRid())
+                        .child("status")
+                        .setValue("accepted")
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                            rides.remove(position); // remove from offers/requests list , we are going to move it to accepted list
+                            notifyItemRemoved(position);
+                            notifyItemRangeChanged(position, rides.size());
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(v.getContext(), "Failed to accept ride", Toast.LENGTH_SHORT).show());
+            });
         }
     }
 
@@ -93,17 +108,20 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
 
     public static class RideViewHolder extends RecyclerView.ViewHolder {
         TextView fromText, toText, dateText;
-        LinearLayout manageButtons;
-        Button editButton, deleteButton;
+        LinearLayout manageMyRideButtons;
+        LinearLayout manageOtherRideButtons;
+        Button editButton, deleteButton, acceptButton;
 
         public RideViewHolder(View itemView) {
             super(itemView);
             fromText = itemView.findViewById(R.id.fromText);
             toText = itemView.findViewById(R.id.toText);
             dateText = itemView.findViewById(R.id.dateText);
-            manageButtons = itemView.findViewById(R.id.manageButtons);
+            manageMyRideButtons = itemView.findViewById(R.id.manageMyRideButtons);
+            manageOtherRideButtons = itemView.findViewById(R.id.manageOtherRideButtons);
             editButton = itemView.findViewById(R.id.editButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
+            acceptButton = itemView.findViewById(R.id.acceptButton);
         }
     }
 }
