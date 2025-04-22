@@ -1,5 +1,7 @@
 package edu.uga.dawgpool.fragments;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -20,6 +23,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Calendar;
 
 import edu.uga.dawgpool.MainActivity;
 import edu.uga.dawgpool.R;
@@ -36,6 +41,10 @@ public class CreateRideFragment extends Fragment {
     FirebaseUser user;
     private EditText pickupEditText;
     private EditText dropOffEditText;
+    private TextView formTitleTextView;
+    private EditText dateEditText;
+    private EditText timeEditText;
+    private Calendar rideDateTime = Calendar.getInstance();
     private Button submitButton;
 
     private String mCreateStatus;
@@ -77,6 +86,9 @@ public class CreateRideFragment extends Fragment {
         pickupEditText = view.findViewById(R.id.pickupEditText);
         dropOffEditText = view.findViewById(R.id.dropoffEditText);
         submitButton = view.findViewById(R.id.submitButton);
+        dateEditText = view.findViewById(R.id.dateEditText);
+        timeEditText = view.findViewById(R.id.timeEditText);
+        formTitleTextView = view.findViewById(R.id.formTitleTextView);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         dbReference = FirebaseDatabase.getInstance().getReference();
@@ -85,23 +97,67 @@ public class CreateRideFragment extends Fragment {
 
         if (mCreateStatus.equals("rider")) {
             ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Request");
+            formTitleTextView.setText("Fill out the form below to create a ride request.");
             submitButton.setText("Submit new Ride Request");
         } else {
             ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Offer");
+            formTitleTextView.setText("Fill out the form below to create a ride offer.");
             submitButton.setText("Submit new Ride Offer");
         }
+
+        // Date picker
+        dateEditText.setOnClickListener(v -> {
+            DatePickerDialog datePicker = new DatePickerDialog(requireContext(),
+                    (view1, year, month, dayOfMonth) -> {
+                        rideDateTime.set(Calendar.YEAR, year);
+                        rideDateTime.set(Calendar.MONTH, month);
+                        rideDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        dateEditText.setText(String.format("%d/%d/%d", month + 1, dayOfMonth, year));
+                    },
+                    rideDateTime.get(Calendar.YEAR),
+                    rideDateTime.get(Calendar.MONTH),
+                    rideDateTime.get(Calendar.DAY_OF_MONTH)
+            );
+            datePicker.show();
+        });
+
+        // Time picker
+        timeEditText.setOnClickListener(v -> {
+            TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
+                    (view12, hourOfDay, minute) -> {
+                        rideDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        rideDateTime.set(Calendar.MINUTE, minute);
+                        rideDateTime.set(Calendar.SECOND, 0);
+                        timeEditText.setText(String.format("%02d:%02d", hourOfDay, minute));
+                    },
+                    rideDateTime.get(Calendar.HOUR_OF_DAY),
+                    rideDateTime.get(Calendar.MINUTE),
+                    false
+            );
+            timePicker.show();
+        });
 
         submitButton.setOnClickListener(v -> {
             // get ride ID and rideType
             String rid = dbReference.child("rides").push().getKey();
             String rideType = mCreateStatus.equals("rider") ? "request" : "offer";
+
+            String pickup = pickupEditText.getText().toString();
+            String dropoff = dropOffEditText.getText().toString();
+            String date = dateEditText.getText().toString();
+            String time = timeEditText.getText().toString();
+
+            if (pickup.isEmpty() || dropoff.isEmpty() || date.isEmpty() || time.isEmpty()) {
+                Toast.makeText(getContext(), "Please fill out all fields.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             // create ride object
             Ride ride = new Ride(
                     rid,
                     rideType,
                     dropOffEditText.getText().toString(),
                     pickupEditText.getText().toString(),
-                    System.currentTimeMillis(),
+                    rideDateTime.getTimeInMillis(),
                     user.getUid(),
                     null,
                     new String("open"),
@@ -115,6 +171,12 @@ public class CreateRideFragment extends Fragment {
                         public void onSuccess(Void aVoid) {
                             // Successfully written to database
                             Toast.makeText(getContext(), "Ride created successfully!", Toast.LENGTH_SHORT).show();
+                            // clear form fields
+                            pickupEditText.setText("");
+                            dropOffEditText.setText("");
+                            dateEditText.setText("");
+                            timeEditText.setText("");
+                            rideDateTime = Calendar.getInstance();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
