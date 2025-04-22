@@ -1,13 +1,11 @@
 package edu.uga.dawgpool.models;
-import com.google.firebase.Timestamp;
-
 public class Ride {
 
     private String rid;
     public String type; // "offer" or "request"
     public String to; // location
     public String from; // location
-    public Timestamp datetime; // for sorting later this should be best
+    public long datetime; // using long because was getting errors with TimeStamp
     public String postedBy; // user who posted, probably their uid
     public String acceptedBy; // null until accepted by a rider (then its their uid)
     public String status; // "open", "accepted", or "completed
@@ -17,7 +15,7 @@ public class Ride {
         // Required for Firebase
     }
 
-    public Ride(String rid, String type, String to, String from, Timestamp datetime,
+    public Ride(String rid, String type, String to, String from, long datetime,
                 String postedBy, String acceptedBy, String status, int points) {
         this.rid = rid;
         this.type = type;

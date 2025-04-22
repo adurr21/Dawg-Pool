@@ -31,12 +31,9 @@ import edu.uga.dawgpool.models.Ride;
  * create an instance of this fragment.
  */
 public class CreateRideFragment extends Fragment {
-
     private static final String CREATE_STATUS = "create_status";
-
     private DatabaseReference dbReference;
     FirebaseUser user;
-
     private EditText pickupEditText;
     private EditText dropOffEditText;
     private Button submitButton;
@@ -54,7 +51,6 @@ public class CreateRideFragment extends Fragment {
      * @param param1 Either "driver" or "rider" depending on if the driver is creating a ride or a rider
      * @return A new instance of fragment CreateRideFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static CreateRideFragment newInstance(String param1) {
         CreateRideFragment fragment = new CreateRideFragment();
         Bundle args = new Bundle();
@@ -74,6 +70,8 @@ public class CreateRideFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
         View view = inflater.inflate(R.layout.fragment_create_ride, container, false);
 
         pickupEditText = view.findViewById(R.id.pickupEditText);
@@ -86,19 +84,24 @@ public class CreateRideFragment extends Fragment {
         Log.d(MainActivity.LOG_TAG, "Arguments for CreateRideFragment: " + mCreateStatus);
 
         if (mCreateStatus.equals("rider")) {
+            ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Request");
             submitButton.setText("Submit new Ride Request");
         } else {
-            submitButton.setText("Submit new future drive");
+            ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Offer");
+            submitButton.setText("Submit new Ride Offer");
         }
 
         submitButton.setOnClickListener(v -> {
+            // get ride ID and rideType
             String rid = dbReference.child("rides").push().getKey();
+            String rideType = mCreateStatus.equals("rider") ? "request" : "offer";
+            // create ride object
             Ride ride = new Ride(
                     rid,
-                    new String("offer"),
+                    rideType,
                     dropOffEditText.getText().toString(),
                     pickupEditText.getText().toString(),
-                    Timestamp.now(),
+                    System.currentTimeMillis(),
                     user.getUid(),
                     null,
                     new String("open"),
@@ -122,8 +125,6 @@ public class CreateRideFragment extends Fragment {
                         }
                     });
         });
-
-
         return view;
     }
 }
