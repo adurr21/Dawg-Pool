@@ -3,12 +3,17 @@ package edu.uga.dawgpool.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,14 +21,18 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.uga.dawgpool.R;
+import edu.uga.dawgpool.fragments.CreateRideFragment;
 import edu.uga.dawgpool.models.Ride;
 
 public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder> {
 
     private List<Ride> rides;
+    private FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+    private FragmentActivity activity;
 
-    public RideAdapter(List<Ride> rides) {
+    public RideAdapter(List<Ride> rides, FragmentActivity activity) {
         this.rides = rides;
+        this.activity = activity;
     }
 
     //  called when RecyclerView creates a new row
@@ -44,6 +53,36 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         Date date = new Date(ride.datetime);
         String formattedDate = new SimpleDateFormat("EEE, MMM d, h:mm a", Locale.getDefault()).format(date);
         holder.dateText.setText("When: " + formattedDate);
+
+        // Only show edit/delete buttons if user is the one who posted it
+        if (ride.postedBy.equals(currentUser.getUid()) && "open".equals(ride.status)) {
+            holder.manageButtons.setVisibility(View.VISIBLE);
+
+            holder.editButton.setOnClickListener(v -> {
+                String mode = ride.type.equals("request") ? "rider" : "driver";
+                CreateRideFragment editFragment = CreateRideFragment.newInstance(mode, ride);
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, editFragment)
+                        .addToBackStack(null)
+                        .commit();
+            });
+
+            holder.deleteButton.setOnClickListener(v -> {
+                FirebaseDatabase.getInstance().getReference("rides")
+                        .child(ride.getRid())
+                        .removeValue()
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(v.getContext(), "Ride deleted", Toast.LENGTH_SHORT).show();
+                            rides.remove(position); // remove from list
+                            notifyItemRemoved(position);
+                            notifyItemRangeChanged(position, rides.size());
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(v.getContext(), "Failed to delete ride", Toast.LENGTH_SHORT).show());
+            });
+        } else {
+            holder.manageButtons.setVisibility(View.GONE);
+        }
     }
 
     // how many items to display
@@ -54,12 +93,17 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
 
     public static class RideViewHolder extends RecyclerView.ViewHolder {
         TextView fromText, toText, dateText;
+        LinearLayout manageButtons;
+        Button editButton, deleteButton;
 
         public RideViewHolder(View itemView) {
             super(itemView);
             fromText = itemView.findViewById(R.id.fromText);
             toText = itemView.findViewById(R.id.toText);
             dateText = itemView.findViewById(R.id.dateText);
+            manageButtons = itemView.findViewById(R.id.manageButtons);
+            editButton = itemView.findViewById(R.id.editButton);
+            deleteButton = itemView.findViewById(R.id.deleteButton);
         }
     }
 }

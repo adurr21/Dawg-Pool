@@ -48,7 +48,7 @@ public class RideOffersFragment extends Fragment {
         // setup RecyclerView
         recyclerView = view.findViewById(R.id.rideOffersRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        rideAdapter = new RideAdapter(rideList);
+        rideAdapter = new RideAdapter(rideList, requireActivity());
         recyclerView.setAdapter(rideAdapter);
 
         // load ride offers from Realtime Database

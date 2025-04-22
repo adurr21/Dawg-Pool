@@ -24,7 +24,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import edu.uga.dawgpool.MainActivity;
 import edu.uga.dawgpool.R;
@@ -46,24 +48,21 @@ public class CreateRideFragment extends Fragment {
     private EditText timeEditText;
     private Calendar rideDateTime = Calendar.getInstance();
     private Button submitButton;
-
     private String mCreateStatus;
+    private Ride rideToEdit = null;
+
 
     public CreateRideFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Either "driver" or "rider" depending on if the driver is creating a ride or a rider
-     * @return A new instance of fragment CreateRideFragment.
-     */
-    public static CreateRideFragment newInstance(String param1) {
+    public static CreateRideFragment newInstance(String mode, Ride rideToEdit) {
         CreateRideFragment fragment = new CreateRideFragment();
         Bundle args = new Bundle();
-        args.putString(CREATE_STATUS, param1);
+        args.putString(CREATE_STATUS, mode); // "rider" or "driver"
+        if (rideToEdit != null) {
+            args.putSerializable("rideToEdit", rideToEdit);
+        }
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,6 +72,9 @@ public class CreateRideFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mCreateStatus = getArguments().getString(CREATE_STATUS);
+            if (getArguments().containsKey("rideToEdit")) {
+                rideToEdit = (Ride) getArguments().getSerializable("rideToEdit");
+            }
         }
     }
 
@@ -96,13 +98,35 @@ public class CreateRideFragment extends Fragment {
         Log.d(MainActivity.LOG_TAG, "Arguments for CreateRideFragment: " + mCreateStatus);
 
         if (mCreateStatus.equals("rider")) {
-            ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Request");
-            formTitleTextView.setText("Fill out the form below to create a ride request.");
-            submitButton.setText("Submit new Ride Request");
+            if (rideToEdit != null) {
+                ((MainActivity) requireActivity()).setToolbarTitle("Update Ride Request");
+                formTitleTextView.setText("Edit your ride request below.");
+                submitButton.setText("Update Ride Request");
+            } else {
+                ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Request");
+                formTitleTextView.setText("Fill out the form below to create a ride request.");
+                submitButton.setText("Submit new Ride Request");
+            }
         } else {
-            ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Offer");
-            formTitleTextView.setText("Fill out the form below to create a ride offer.");
-            submitButton.setText("Submit new Ride Offer");
+            if (rideToEdit != null) {
+                ((MainActivity) requireActivity()).setToolbarTitle("Update Ride Offer");
+                formTitleTextView.setText("Edit your ride offer below.");
+                submitButton.setText("Update Ride Offer");
+            } else {
+                ((MainActivity) requireActivity()).setToolbarTitle("Create Ride Offer");
+                formTitleTextView.setText("Fill out the form below to create a ride offer.");
+                submitButton.setText("Submit new Ride Offer");
+            }
+        }
+
+        // Pre-fill form if editing
+        if (rideToEdit != null) {
+            pickupEditText.setText(rideToEdit.from);
+            dropOffEditText.setText(rideToEdit.to);
+            rideDateTime.setTimeInMillis(rideToEdit.datetime);
+
+            dateEditText.setText(new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(rideDateTime.getTime()));
+            timeEditText.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(rideDateTime.getTime()));
         }
 
         // Date picker
@@ -139,8 +163,6 @@ public class CreateRideFragment extends Fragment {
 
         submitButton.setOnClickListener(v -> {
             // get ride ID and rideType
-            String rid = dbReference.child("rides").push().getKey();
-            String rideType = mCreateStatus.equals("rider") ? "request" : "offer";
 
             String pickup = pickupEditText.getText().toString();
             String dropoff = dropOffEditText.getText().toString();
@@ -151,15 +173,19 @@ public class CreateRideFragment extends Fragment {
                 Toast.makeText(getContext(), "Please fill out all fields.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            String rid = (rideToEdit != null) ? rideToEdit.getRid() : dbReference.child("rides").push().getKey();
+            String rideType = mCreateStatus.equals("rider") ? "request" : "offer";
+
             // create ride object
             Ride ride = new Ride(
                     rid,
                     rideType,
-                    dropOffEditText.getText().toString(),
-                    pickupEditText.getText().toString(),
+                    dropoff,
+                    pickup,
                     rideDateTime.getTimeInMillis(),
                     user.getUid(),
-                    null,
+                    rideToEdit != null ? rideToEdit.acceptedBy : null,
                     new String("open"),
                     50
             );
@@ -170,13 +196,29 @@ public class CreateRideFragment extends Fragment {
                         @Override
                         public void onSuccess(Void aVoid) {
                             // Successfully written to database
-                            Toast.makeText(getContext(), "Ride created successfully!", Toast.LENGTH_SHORT).show();
-                            // clear form fields
-                            pickupEditText.setText("");
-                            dropOffEditText.setText("");
-                            dateEditText.setText("");
-                            timeEditText.setText("");
-                            rideDateTime = Calendar.getInstance();
+                            Toast.makeText(getContext(),
+                                    rideToEdit != null ? "Ride updated successfully!" : "Ride created successfully!",
+                                    Toast.LENGTH_SHORT).show();
+                            if (rideToEdit != null) {
+                                if (mCreateStatus.equals("rider")) {
+                                    requireActivity().getSupportFragmentManager().beginTransaction()
+                                            .replace(R.id.fragment_container, new RideRequestsFragment())
+                                            .addToBackStack(null)
+                                            .commit();
+                                } else {
+                                    requireActivity().getSupportFragmentManager().beginTransaction()
+                                            .replace(R.id.fragment_container, new RideOffersFragment())
+                                            .addToBackStack(null)
+                                            .commit();
+                                }
+                            } else {
+                                // If not updating, just clear the form
+                                pickupEditText.setText("");
+                                dropOffEditText.setText("");
+                                dateEditText.setText("");
+                                timeEditText.setText("");
+                                rideDateTime = Calendar.getInstance();
+                            }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

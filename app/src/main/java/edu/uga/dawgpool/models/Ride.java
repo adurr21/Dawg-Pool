@@ -1,5 +1,8 @@
 package edu.uga.dawgpool.models;
-public class Ride {
+
+import java.io.Serializable;
+
+public class Ride implements Serializable {
 
     private String rid;
     public String type; // "offer" or "request"
@@ -26,5 +29,9 @@ public class Ride {
         this.acceptedBy = acceptedBy;
         this.status = status;
         this.points = points;
+    }
+
+    public String getRid() {
+        return rid;
     }
 }
