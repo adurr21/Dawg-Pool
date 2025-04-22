@@ -66,7 +66,7 @@ public class AcceptedRidesFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.acceptedRidesRecycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        rideAdapter = new RideAdapter(rideList, requireActivity());
+        rideAdapter = new RideAdapter(rideList, requireActivity(), "accepted");
         recyclerView.setAdapter(rideAdapter);
         dbRef = FirebaseDatabase.getInstance().getReference("rides");
         loadAcceptedRides();

@@ -32,9 +32,12 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
     private FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
     private FragmentActivity activity;
 
-    public RideAdapter(List<Ride> rides, FragmentActivity activity) {
+    private String mode; // "offers", "requests", "accepted"
+
+    public RideAdapter(List<Ride> rides, FragmentActivity activity, String mode) {
         this.rides = rides;
         this.activity = activity;
+        this.mode = mode;
     }
 
     //  called when RecyclerView creates a new row
@@ -83,35 +86,39 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
                                 Toast.makeText(v.getContext(), "Failed to delete ride", Toast.LENGTH_SHORT).show());
             });
         } else {
+
             holder.manageMyRideButtons.setVisibility(View.GONE);
-            holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
+            // Only show accept button if not in "accepted" fragment
+            if (!mode.equals("accepted")) {
+                holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
 
-            holder.acceptButton.setOnClickListener(v -> {
-                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                FirebaseDatabase.getInstance().getReference("rides")
-                        .child(ride.getRid())
-                        .child("status")
-                        .setValue("accepted")
-                        .addOnSuccessListener(aVoid -> {
-                            // set acceptedBy after setting status
-                            FirebaseDatabase.getInstance().getReference("rides")
-                                    .child(ride.getRid())
-                                    .child("acceptedBy")
-                                    .setValue(uid)
-                                    .addOnSuccessListener(aVoid2 -> {
-                                        Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
-                                        // remove from list
-                                        rides.remove(position);
-                                        notifyItemRemoved(position);
-                                        notifyItemRangeChanged(position, rides.size());
+                holder.acceptButton.setOnClickListener(v -> {
+                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                                    })
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(v.getContext(), "Failed to update acceptedBy", Toast.LENGTH_SHORT).show());
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(v.getContext(), "Failed to accept ride", Toast.LENGTH_SHORT).show());
-            });
+                    FirebaseDatabase.getInstance().getReference("rides")
+                            .child(ride.getRid())
+                            .child("status")
+                            .setValue("accepted")
+                            .addOnSuccessListener(aVoid -> {
+                                FirebaseDatabase.getInstance().getReference("rides")
+                                        .child(ride.getRid())
+                                        .child("acceptedBy")
+                                        .setValue(uid)
+                                        .addOnSuccessListener(aVoid2 -> {
+                                            Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                            rides.remove(position);
+                                            notifyItemRemoved(position);
+                                            notifyItemRangeChanged(position, rides.size());
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(v.getContext(), "Failed to update acceptedBy", Toast.LENGTH_SHORT).show());
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(v.getContext(), "Failed to accept ride", Toast.LENGTH_SHORT).show());
+                });
+            } else {
+                holder.manageOtherRideButtons.setVisibility(View.GONE);
+            }
         }
     }
 
