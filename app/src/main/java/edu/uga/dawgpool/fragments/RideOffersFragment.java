@@ -68,8 +68,8 @@ public class RideOffersFragment extends Fragment {
 
                 for (DataSnapshot rideSnap : snapshot.getChildren()) {
                     Ride ride = rideSnap.getValue(Ride.class);
-                    // load offers only
-                    if (ride != null && "offer".equals(ride.type)) {
+                    // load open offers only (not accepted or completed)
+                    if (ride != null && "offer".equals(ride.type) && "open".equals(ride.status)) {
                         rideList.add(ride);
                     }
                 }

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,27 +43,14 @@ public class AcceptedRidesFragment extends Fragment {
     private RideAdapter rideAdapter;
     private List<Ride> rideList = new ArrayList<>();
     private DatabaseReference dbRef;
-
     private FirebaseUser user;
 
     public AcceptedRidesFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AcceptedRidesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AcceptedRidesFragment newInstance(String param1, String param2) {
-        AcceptedRidesFragment fragment = new AcceptedRidesFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
+    public static AcceptedRidesFragment newInstance() {
+        return new AcceptedRidesFragment();
     }
 
     @Override
@@ -80,10 +68,9 @@ public class AcceptedRidesFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         rideAdapter = new RideAdapter(rideList, requireActivity());
         recyclerView.setAdapter(rideAdapter);
-
         dbRef = FirebaseDatabase.getInstance().getReference("rides");
-
         loadAcceptedRides();
+
         return view;
     }
 
@@ -98,21 +85,26 @@ public class AcceptedRidesFragment extends Fragment {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // Fresh list so we aren't sharing the list with the other fragments
+                List<Ride> freshList = new ArrayList<>();
                 for (DataSnapshot rideSnapshot : snapshot.getChildren()) {
                     Ride ride = rideSnapshot.getValue(Ride.class);
+                    if (ride != null) {
+                        if (uid.equals(ride.postedBy) || uid.equals(ride.acceptedBy)) {
+                            Log.d(MainActivity.LOG_TAG, "loadAcceptedRides: Adding this ride to the rideList");
+                            freshList.add(ride);
+                        }
+                    }
                     String postedBy = ride.postedBy;
                     String acceptedBy = ride.acceptedBy;
                     Log.d(MainActivity.LOG_TAG, "loadAcceptedRides: postedBy: " + postedBy);
                     Log.d(MainActivity.LOG_TAG, "loadAcceptedRides: acceptedBy: " + acceptedBy);
 
-
-                    if (uid.equals(postedBy) || uid.equals(acceptedBy)) {
-                        Log.d(MainActivity.LOG_TAG, "loadAcceptedRides: Adding this ride to the rideList");
-                        rideList.add(ride);
-                    }
                 }
 
-                Collections.sort(rideList, Comparator.comparingLong(r -> r.datetime));
+                Collections.sort(freshList, Comparator.comparingLong(r -> r.datetime));
+                rideList.clear();
+                rideList.addAll(freshList);
                 rideAdapter.notifyDataSetChanged();
 
             }
@@ -120,6 +112,7 @@ public class AcceptedRidesFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(MainActivity.LOG_TAG, "AcceptedRidesFragment - loadAcceptedRides Error: " + error.getDetails());
+                Toast.makeText(getContext(), "Failed to load accepted rides.", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -11,7 +11,7 @@ public class Ride implements Serializable {
     public long datetime; // using long because was getting errors with TimeStamp
     public String postedBy; // user who posted, probably their uid
     public String acceptedBy; // null until accepted by a rider (then its their uid)
-    public String status; // "open", "accepted", or "completed
+    public String status; // "open", "accepted", or "completed"
     public int points; // 50 by default
 
     public Ride() {

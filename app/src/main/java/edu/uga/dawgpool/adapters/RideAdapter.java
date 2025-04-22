@@ -22,6 +22,8 @@ import java.util.Locale;
 
 import edu.uga.dawgpool.R;
 import edu.uga.dawgpool.fragments.CreateRideFragment;
+import edu.uga.dawgpool.fragments.RideOffersFragment;
+import edu.uga.dawgpool.fragments.RideRequestsFragment;
 import edu.uga.dawgpool.models.Ride;
 
 public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder> {
@@ -83,16 +85,29 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         } else {
             holder.manageMyRideButtons.setVisibility(View.GONE);
             holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
+
             holder.acceptButton.setOnClickListener(v -> {
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 FirebaseDatabase.getInstance().getReference("rides")
                         .child(ride.getRid())
                         .child("status")
                         .setValue("accepted")
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
-                            rides.remove(position); // remove from offers/requests list , we are going to move it to accepted list
-                            notifyItemRemoved(position);
-                            notifyItemRangeChanged(position, rides.size());
+                            // set acceptedBy after setting status
+                            FirebaseDatabase.getInstance().getReference("rides")
+                                    .child(ride.getRid())
+                                    .child("acceptedBy")
+                                    .setValue(uid)
+                                    .addOnSuccessListener(aVoid2 -> {
+                                        Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                        // remove from list
+                                        rides.remove(position);
+                                        notifyItemRemoved(position);
+                                        notifyItemRangeChanged(position, rides.size());
+
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(v.getContext(), "Failed to update acceptedBy", Toast.LENGTH_SHORT).show());
                         })
                         .addOnFailureListener(e ->
                                 Toast.makeText(v.getContext(), "Failed to accept ride", Toast.LENGTH_SHORT).show());
