@@ -46,6 +46,13 @@
             android:layout_marginTop="16dp"
             android:text="View Accepted Rides" />
 
+        <Button
+            android:id="@+id/viewPastRidesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="View Ride History" />
+
     </LinearLayout>
 
 </FrameLayout>

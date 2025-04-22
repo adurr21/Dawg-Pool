@@ -59,7 +59,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         String formattedDate = new SimpleDateFormat("EEE, MMM d, h:mm a", Locale.getDefault()).format(date);
         holder.dateText.setText("When: " + formattedDate);
 
-        if (mode.equals("accepted")) {
+        if (mode.equals("accepted") || mode.equals("completed")) {
             holder.roleText.setVisibility(View.VISIBLE);
             if (ride.postedBy.equals(currentUser.getUid())) {
                 holder.roleText.setText("Your Role: Driver");
@@ -105,6 +105,12 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         } else {
 
             holder.manageMyRideButtons.setVisibility(View.GONE);
+
+            if (mode.equals("completed")) {
+                holder.manageOtherRideButtons.setVisibility(View.GONE);
+                return;
+            }
+
             // Only show accept button if not in "accepted" fragment
             if (!mode.equals("accepted")) {
                 holder.manageOtherRideButtons.setVisibility(View.VISIBLE);

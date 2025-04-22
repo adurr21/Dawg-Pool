@@ -33,6 +33,7 @@ public class DashboardFragment extends Fragment {
         Button createRideButton = view.findViewById(R.id.createRideButton);
 
         Button viewAcceptedRidesButton = view.findViewById(R.id.viewAcceptedRidesButton);
+        Button viewPastRidesButton = view.findViewById(R.id.viewPastRidesButton);
 
         viewOffersButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -73,6 +74,13 @@ public class DashboardFragment extends Fragment {
         viewAcceptedRidesButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new AcceptedRidesFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        viewPastRidesButton.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new PastRidesFragment())
                     .addToBackStack(null)
                     .commit();
         });
