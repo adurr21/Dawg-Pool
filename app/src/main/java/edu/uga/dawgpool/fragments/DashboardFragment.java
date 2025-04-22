@@ -32,6 +32,8 @@ public class DashboardFragment extends Fragment {
         Button createDriveButton = view.findViewById(R.id.createDriveButton);
         Button createRideButton = view.findViewById(R.id.createRideButton);
 
+        Button viewAcceptedRidesButton = view.findViewById(R.id.viewAcceptedRidesButton);
+
         viewOffersButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new RideOffersFragment())
@@ -64,6 +66,13 @@ public class DashboardFragment extends Fragment {
             args.putString("create_status", "rider");
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, createRideFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        viewAcceptedRidesButton.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new AcceptedRidesFragment())
                     .addToBackStack(null)
                     .commit();
         });
