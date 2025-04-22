@@ -186,6 +186,8 @@ public class CreateRideFragment extends Fragment {
                     rideDateTime.getTimeInMillis(),
                     user.getUid(),
                     rideToEdit != null ? rideToEdit.acceptedBy : null,
+                    null,
+                    null,
                     new String("open"),
                     50
             );

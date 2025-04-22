@@ -11,6 +11,8 @@ public class Ride implements Serializable {
     public long datetime; // using long because was getting errors with TimeStamp
     public String postedBy; // user who posted, probably their uid
     public String acceptedBy; // null until accepted by a rider (then its their uid)
+    public String driverEmail;
+    public String riderEmail;
     public String status; // "open", "accepted", or "completed"
     public int points; // 50 by default
 
@@ -19,7 +21,7 @@ public class Ride implements Serializable {
     }
 
     public Ride(String rid, String type, String to, String from, long datetime,
-                String postedBy, String acceptedBy, String status, int points) {
+                String postedBy, String acceptedBy, String driverEmail, String riderEmail, String status, int points) {
         this.rid = rid;
         this.type = type;
         this.to = to;
@@ -27,6 +29,8 @@ public class Ride implements Serializable {
         this.datetime = datetime;
         this.postedBy = postedBy;
         this.acceptedBy = acceptedBy;
+        this.driverEmail = driverEmail;
+        this.riderEmail = riderEmail;
         this.status = status;
         this.points = points;
     }

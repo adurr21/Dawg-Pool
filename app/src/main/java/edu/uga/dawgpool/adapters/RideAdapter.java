@@ -110,28 +110,64 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
                 holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
 
                 holder.acceptButton.setOnClickListener(v -> {
-                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    FirebaseDatabase.getInstance().getReference("rides")
-                            .child(ride.getRid())
-                            .child("status")
-                            .setValue("accepted")
-                            .addOnSuccessListener(aVoid -> {
-                                FirebaseDatabase.getInstance().getReference("rides")
-                                        .child(ride.getRid())
-                                        .child("acceptedBy")
-                                        .setValue(uid)
-                                        .addOnSuccessListener(aVoid2 -> {
-                                            Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
-                                            rides.remove(position);
-                                            notifyItemRemoved(position);
-                                            notifyItemRangeChanged(position, rides.size());
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(v.getContext(), "Failed to update acceptedBy", Toast.LENGTH_SHORT).show());
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(v.getContext(), "Failed to accept ride", Toast.LENGTH_SHORT).show());
+                    String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    String currentEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                    String postedByUid = ride.postedBy;
+
+                    if (ride.type.equals("offer")) {
+                        // user is a rider
+                        FirebaseDatabase.getInstance().getReference("users")
+                                .child(postedByUid)
+                                .child("email")
+                                .get()
+                                .addOnSuccessListener(snapshot -> {
+                                    String driverEmail = snapshot.getValue(String.class);
+
+                                    FirebaseDatabase.getInstance().getReference("rides")
+                                            .child(ride.getRid())
+                                            .child("status")
+                                            .setValue("accepted")
+                                            .addOnSuccessListener(aVoid -> {
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(currentEmail);
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(driverEmail);
+
+                                                Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                                rides.remove(position);
+                                                notifyItemRemoved(position);
+                                                notifyItemRangeChanged(position, rides.size());
+                                            });
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(v.getContext(), "Failed to fetch driver email", Toast.LENGTH_SHORT).show());
+                    } else {
+                        // user is accepting as a driver
+                        FirebaseDatabase.getInstance().getReference("users")
+                                .child(postedByUid)
+                                .child("email")
+                                .get()
+                                .addOnSuccessListener(snapshot -> {
+                                    String riderEmail = snapshot.getValue(String.class);
+
+                                    FirebaseDatabase.getInstance().getReference("rides")
+                                            .child(ride.getRid())
+                                            .child("status")
+                                            .setValue("accepted")
+                                            .addOnSuccessListener(aVoid -> {
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(currentEmail);
+                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(riderEmail);
+
+                                                Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                                rides.remove(position);
+                                                notifyItemRemoved(position);
+                                                notifyItemRangeChanged(position, rides.size());
+                                            });
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(v.getContext(), "Failed to fetch rider email", Toast.LENGTH_SHORT).show());
+                    }
                 });
             } else {
                 holder.manageOtherRideButtons.setVisibility(View.GONE);
