@@ -55,22 +55,24 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setVisibility(View.VISIBLE);
 
-
         if (user != null) {
-            // Load Dashboard Fragment since user is already logged in.
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new DashboardFragment())
-                    .commit();
-        } else {
-            // Load Login Fragment if a user was not found by FireBase
             if (savedInstanceState == null) {
+                // Load Dashboard Fragment since user is already logged in.
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new DashboardFragment())
+                        .commit();
+            }
+        } else {
+            if (savedInstanceState == null) {
+                // Load Login Fragment if a user was not found by FireBase
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new LoginFragment())
                         .commit();
             }
         }
 
-    }
+
+        }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
