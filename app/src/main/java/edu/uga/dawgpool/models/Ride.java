@@ -15,13 +15,15 @@ public class Ride implements Serializable {
     public String riderEmail;
     public String status; // "open", "accepted", or "completed"
     public int points; // 50 by default
+    public boolean confirmedByDriver;
+    public boolean confirmedByRider;
 
     public Ride() {
         // Required for Firebase
     }
 
     public Ride(String rid, String type, String to, String from, long datetime,
-                String postedBy, String acceptedBy, String driverEmail, String riderEmail, String status, int points) {
+                String postedBy, String acceptedBy, String driverEmail, String riderEmail, String status, int points, boolean confirmedByDriver, boolean confirmedByRider) {
         this.rid = rid;
         this.type = type;
         this.to = to;
@@ -33,6 +35,8 @@ public class Ride implements Serializable {
         this.riderEmail = riderEmail;
         this.status = status;
         this.points = points;
+        this.confirmedByDriver = confirmedByDriver;
+        this.confirmedByRider = confirmedByRider;
     }
 
     public String getRid() {

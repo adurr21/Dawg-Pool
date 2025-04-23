@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +39,31 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         this.rides = rides;
         this.activity = activity;
         this.mode = mode;
+    }
+
+    private void finalizeRide(Ride ride) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+
+        // Fetch rider and driver points first
+        usersRef.child(ride.acceptedBy).child("ridePoints").get().addOnSuccessListener(riderSnap -> {
+            usersRef.child(ride.postedBy).child("ridePoints").get().addOnSuccessListener(driverSnap -> {
+                int riderPoints = riderSnap.getValue(Integer.class);
+                int driverPoints = driverSnap.getValue(Integer.class);
+
+                int cost = ride.points;
+
+                usersRef.child(ride.acceptedBy).child("ridePoints").setValue(riderPoints - cost);
+                usersRef.child(ride.postedBy).child("ridePoints").setValue(driverPoints + cost);
+
+                // Set ride to completed
+                FirebaseDatabase.getInstance().getReference("rides")
+                        .child(ride.getRid())
+                        .child("status")
+                        .setValue("completed");
+
+                Toast.makeText(activity, "Ride completed!", Toast.LENGTH_SHORT).show();
+            });
+        });
     }
 
     //  called when RecyclerView creates a new row
@@ -108,75 +134,92 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
 
             if (mode.equals("completed")) {
                 holder.manageOtherRideButtons.setVisibility(View.GONE);
+                holder.confirmButton.setVisibility(View.GONE);
                 return;
             }
 
-            // Only show accept button if not in "accepted" fragment
-            if (!mode.equals("accepted")) {
+            if (mode.equals("accepted")) {
+                holder.manageOtherRideButtons.setVisibility(View.GONE);
+                holder.confirmButton.setVisibility(View.VISIBLE);
+
+                boolean isDriver = ride.postedBy.equals(currentUser.getUid());
+                boolean isRider = ride.acceptedBy != null && ride.acceptedBy.equals(currentUser.getUid());
+                boolean hasConfirmed = (isDriver && ride.confirmedByDriver) || (isRider && ride.confirmedByRider);
+
+                holder.confirmButton.setText(hasConfirmed ? "Confirmed" : "Confirm Ride Completed");
+                holder.confirmButton.setEnabled(!hasConfirmed);
+
+                holder.confirmButton.setOnClickListener(v -> {
+                    String fieldToUpdate = isDriver ? "confirmedByDriver" : "confirmedByRider";
+                    FirebaseDatabase.getInstance().getReference("rides")
+                            .child(ride.getRid())
+                            .child(fieldToUpdate)
+                            .setValue(true)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(v.getContext(), "Confirmation recorded", Toast.LENGTH_SHORT).show();
+                                if (isDriver) ride.confirmedByDriver = true;
+                                else ride.confirmedByRider = true;
+                                notifyItemChanged(position);
+
+                                // If both confirmed, finalize ride
+                                if (ride.confirmedByDriver && ride.confirmedByRider) {
+                                    finalizeRide(ride);
+
+                                    // remove from adapter - may not need we will see
+                                    rides.remove(position);
+                                    notifyItemRemoved(position);
+                                    notifyItemRangeChanged(position, rides.size());
+                                }
+                            });
+                });
+            }
+
+            // Offer/Request: show accept button
+            else {
                 holder.manageOtherRideButtons.setVisibility(View.VISIBLE);
+                holder.confirmButton.setVisibility(View.GONE);
 
                 holder.acceptButton.setOnClickListener(v -> {
-
                     String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     String currentEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
                     String postedByUid = ride.postedBy;
 
                     if (ride.type.equals("offer")) {
-                        // user is a rider
                         FirebaseDatabase.getInstance().getReference("users")
                                 .child(postedByUid)
                                 .child("email")
                                 .get()
                                 .addOnSuccessListener(snapshot -> {
                                     String driverEmail = snapshot.getValue(String.class);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("status").setValue("accepted");
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(currentEmail);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(driverEmail);
 
-                                    FirebaseDatabase.getInstance().getReference("rides")
-                                            .child(ride.getRid())
-                                            .child("status")
-                                            .setValue("accepted")
-                                            .addOnSuccessListener(aVoid -> {
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(currentEmail);
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(driverEmail);
-
-                                                Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
-                                                rides.remove(position);
-                                                notifyItemRemoved(position);
-                                                notifyItemRangeChanged(position, rides.size());
-                                            });
-                                })
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(v.getContext(), "Failed to fetch driver email", Toast.LENGTH_SHORT).show());
+                                    Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                    rides.remove(position);
+                                    notifyItemRemoved(position);
+                                    notifyItemRangeChanged(position, rides.size());
+                                });
                     } else {
-                        // user is accepting as a driver
                         FirebaseDatabase.getInstance().getReference("users")
                                 .child(postedByUid)
                                 .child("email")
                                 .get()
                                 .addOnSuccessListener(snapshot -> {
                                     String riderEmail = snapshot.getValue(String.class);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("status").setValue("accepted");
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(currentEmail);
+                                    FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(riderEmail);
 
-                                    FirebaseDatabase.getInstance().getReference("rides")
-                                            .child(ride.getRid())
-                                            .child("status")
-                                            .setValue("accepted")
-                                            .addOnSuccessListener(aVoid -> {
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("acceptedBy").setValue(currentUid);
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("driverEmail").setValue(currentEmail);
-                                                FirebaseDatabase.getInstance().getReference("rides").child(ride.getRid()).child("riderEmail").setValue(riderEmail);
-
-                                                Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
-                                                rides.remove(position);
-                                                notifyItemRemoved(position);
-                                                notifyItemRangeChanged(position, rides.size());
-                                            });
-                                })
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(v.getContext(), "Failed to fetch rider email", Toast.LENGTH_SHORT).show());
+                                    Toast.makeText(v.getContext(), "Ride accepted", Toast.LENGTH_SHORT).show();
+                                    rides.remove(position);
+                                    notifyItemRemoved(position);
+                                    notifyItemRangeChanged(position, rides.size());
+                                });
                     }
                 });
-            } else {
-                holder.manageOtherRideButtons.setVisibility(View.GONE);
             }
         }
     }
@@ -191,7 +234,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         TextView fromText, toText, dateText, roleText, ridePointsText;
         LinearLayout manageMyRideButtons;
         LinearLayout manageOtherRideButtons;
-        Button editButton, deleteButton, acceptButton;
+        Button editButton, deleteButton, acceptButton, confirmButton;
 
         public RideViewHolder(View itemView) {
             super(itemView);
@@ -205,6 +248,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             editButton = itemView.findViewById(R.id.editButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
             acceptButton = itemView.findViewById(R.id.acceptButton);
+            confirmButton = itemView.findViewById(R.id.confirmButton);
         }
     }
 }

@@ -189,7 +189,9 @@ public class CreateRideFragment extends Fragment {
                     null,
                     null,
                     new String("open"),
-                    50
+                    50,
+                    false,
+                    false
             );
 
             // Save it under "rides" node
