@@ -28,6 +28,18 @@ public class DashboardFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return The View
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -44,6 +56,7 @@ public class DashboardFragment extends Fragment {
             String uid = currentUser.getUid();
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
 
+            // Display points that a user has
             userRef.child("ridePoints").get().addOnSuccessListener(snapshot -> {
                 Integer points = snapshot.getValue(Integer.class);
                 if (points != null) {
@@ -66,6 +79,7 @@ public class DashboardFragment extends Fragment {
             });
         }
 
+        // Create links to xml buttons and set onClick Listeners to direct towards the respective Fragments
         Button viewOffersButton = view.findViewById(R.id.viewOffersBtn);
         Button viewRequestsButton = view.findViewById(R.id.viewRequestsBtn);
 

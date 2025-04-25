@@ -38,6 +38,18 @@ public class RideRequestsFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return The view
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -58,6 +70,9 @@ public class RideRequestsFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Loads the ride requests from the FireBase Database and populates the Adapter
+     */
     private void loadRideRequests() {
         ridesRef.orderByChild("datetime").addListenerForSingleValueEvent(new ValueEventListener() {
 

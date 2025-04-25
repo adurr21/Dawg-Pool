@@ -27,6 +27,18 @@ public class LoginFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return The View
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -45,6 +57,7 @@ public class LoginFragment extends Fragment {
             String email = emailEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
+            // Check if email or password fields are empty
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Email and password must not be empty.", Toast.LENGTH_SHORT).show();
                 return;
@@ -55,6 +68,7 @@ public class LoginFragment extends Fragment {
                 return;
             }
 
+            // Sign in with Firebase
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
@@ -72,6 +86,7 @@ public class LoginFragment extends Fragment {
                     });
         });
 
+        // Redirect to Registration Fragment
         goToRegisterBtn.setOnClickListener(v ->
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new RegisterFragment())
