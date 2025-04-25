@@ -30,6 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private boolean showLogout = true;
 
+    /**
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+     *
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    /**
+     *
+     * @param menu The options menu in which you place your items.
+     *
+     * @return boolean true
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -86,6 +99,13 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * If the user chooses the logout item, sign them out and clear the back stack
+     *
+     * @param item The menu item that was selected.
+     *
+     * @return boolean true
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_logout) {

@@ -56,6 +56,13 @@ public class CreateRideFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * method to create a new instance of CreateRideFragment.
+     *
+     * @param mode The mode ("rider" or "driver") to determine ride type.
+     * @param rideToEdit The Ride object to edit, if editing an existing ride; otherwise null.
+     * @return A new instance of CreateRideFragment.
+     */
     public static CreateRideFragment newInstance(String mode, Ride rideToEdit) {
         CreateRideFragment fragment = new CreateRideFragment();
         Bundle args = new Bundle();
@@ -67,6 +74,11 @@ public class CreateRideFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +90,18 @@ public class CreateRideFragment extends Fragment {
         }
     }
 
+    /**
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return View view
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

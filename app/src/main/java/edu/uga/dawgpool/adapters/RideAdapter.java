@@ -28,6 +28,11 @@ import edu.uga.dawgpool.fragments.RideOffersFragment;
 import edu.uga.dawgpool.fragments.RideRequestsFragment;
 import edu.uga.dawgpool.models.Ride;
 
+/**
+ * RecyclerView adapter used to display a list of rides.
+ * handles the logic for rendering each ride item, managing ride state changes,
+ * and updating the database accordingly.
+ */
 public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder> {
 
     private List<Ride> rides;
@@ -36,12 +41,24 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
 
     private String mode; // "offers", "requests", "accepted"
 
+    /**
+     * Constructs a RideAdapter with the given ride list, activity context, and mode.
+     *
+     * @param rides    List of Ride objects to display.
+     * @param activity The FragmentActivity context for fragment transactions.
+     * @param mode     A string determining how the adapter behaves.
+     */
     public RideAdapter(List<Ride> rides, FragmentActivity activity, String mode) {
         this.rides = rides;
         this.activity = activity;
         this.mode = mode;
     }
 
+    /**
+     * Finalizes a ride by adjusting user points and marking the ride as completed in Firebase.
+     *
+     * @param ride The Ride object to finalize.
+     */
     private void finalizeRide(Ride ride) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
 
@@ -67,7 +84,15 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         });
     }
 
-    //  called when RecyclerView creates a new row
+    /**
+     * called when RecyclerView creates a new row
+     *
+     * @param parent The ViewGroup into which the new View will be added after it is bound to
+     *               an adapter position.
+     * @param viewType The view type of the new View.
+     *
+     * @return
+     */
     @Override
     public RideViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.ride_item, parent, false);
@@ -234,12 +259,20 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         return rides.size();
     }
 
+    /**
+     * ViewHolder class for holding the views associated with each ride item in the RecyclerView.
+     */
     public static class RideViewHolder extends RecyclerView.ViewHolder {
         TextView fromText, toText, dateText, roleText, ridePointsText;
         LinearLayout manageMyRideButtons;
         LinearLayout manageOtherRideButtons;
         Button editButton, deleteButton, acceptButton, confirmButton;
 
+        /**
+         * Constructs a RideViewHolder and initializes all ride item views.
+         *
+         * @param itemView The root view of the ride item layout.
+         */
         public RideViewHolder(View itemView) {
             super(itemView);
             fromText = itemView.findViewById(R.id.fromText);
