@@ -82,7 +82,7 @@ public class AcceptedRidesFragment extends Fragment {
 
         Log.d(MainActivity.LOG_TAG, "loadAcceptedRides: Current user uid: " + uid);
 
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 // Fresh list so we aren't sharing the list with the other fragments

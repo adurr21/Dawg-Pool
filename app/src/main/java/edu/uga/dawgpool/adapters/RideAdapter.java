@@ -1,5 +1,6 @@
 package edu.uga.dawgpool.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -157,8 +158,11 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
                             .setValue(true)
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(v.getContext(), "Confirmation recorded", Toast.LENGTH_SHORT).show();
-                                if (isDriver) ride.confirmedByDriver = true;
-                                else ride.confirmedByRider = true;
+                                if (isDriver) {
+                                    ride.confirmedByDriver = true;
+                                } else {
+                                    ride.confirmedByRider = true;
+                                }
                                 notifyItemChanged(position);
 
                                 // If both confirmed, finalize ride
